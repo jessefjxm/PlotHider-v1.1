@@ -33,6 +33,7 @@ import com.plotsquared.bukkit.util.BukkitUtil;
 public class PacketHandler {
 	public static ProtocolManager manager;
 	private static HashMap<String, Integer> worldHeight = new HashMap<>();
+	private static HashMap<String, String> worldFillingBlock = new HashMap<>();
 	private static int[][] markShape = { { 7, 4 }, { 8, 4 }, { 9, 4 }, { 6, 5 }, { 6, 6 }, { 10, 5 }, { 10, 6 },
 			{ 10, 7 }, { 9, 8 }, { 8, 9 }, { 8, 10 }, { 8, 12 } };
 
@@ -125,13 +126,20 @@ public class PacketHandler {
 							event.setCancelled(true);
 							return;
 						}
-
 						packet = event.getPacket().shallowClone();
 						StructureModifier<MultiBlockChangeInfo[]> changeArray = packet.getMultiBlockChangeInfoArrays();
 						int plotHeight = getWorldHeight(player, world);
 						boolean[][] marked = markShape(16, markShape);
+						if (!worldFillingBlock.containsKey(world)) {
+							worldFillingBlock.put(world,
+									PS.get().worlds.getStringList("worlds." + world + ".plot.floor").get(0));
+						}
+						String[] floorBlock = worldFillingBlock.get(world).split(":");
+
 						WrappedBlockData airblock = WrappedBlockData.createData(Material.AIR, (byte) 0);
-						WrappedBlockData groundblock = WrappedBlockData.createData(Material.STONE, (byte) 0);
+						WrappedBlockData groundblock = WrappedBlockData.createData(
+								Material.getMaterial(Integer.parseInt(floorBlock[0])),
+								floorBlock.length > 1 ? Byte.parseByte(floorBlock[1]) : 0);
 						WrappedBlockData markblock = WrappedBlockData.createData(Material.CONCRETE, (byte) 14);
 
 						// Hide some of the blocks (but maybe not all)
@@ -210,8 +218,15 @@ public class PacketHandler {
 				// Not allowed to see part of the chunk
 				Plot denied = plot1 != null ? plot1 : plot2 != null ? plot2 : plot3 != null ? plot3 : plot4;
 				PlotArea area = denied.getArea();
+				if (!worldFillingBlock.containsKey(world)) {
+					worldFillingBlock.put(world,
+							PS.get().worlds.getStringList("worlds." + world + ".plot.floor").get(0));
+				}
+				String[] floorBlock = worldFillingBlock.get(world).split(":");
+
 				PlotBlock airblock = new PlotBlock((short) 0, (byte) 0);
-				PlotBlock groundblock = new PlotBlock((short) 1, (byte) 0);
+				PlotBlock groundblock = new PlotBlock(Short.parseShort(floorBlock[0]),
+						floorBlock.length > 1 ? Byte.parseByte(floorBlock[1]) : 0);
 				PlotBlock markblock = new PlotBlock((short) 251, (byte) 14);
 
 				packet = event.getPacket().shallowClone();
