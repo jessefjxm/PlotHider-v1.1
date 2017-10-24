@@ -30,7 +30,7 @@ public class Main extends JavaPlugin implements Listener {
     public void onTeleport(PlayerTeleportEvent event) {
         final Player player = event.getPlayer();
         final PlotPlayer pp = BukkitUtil.getPlayer(player);
-        if (Permissions.hasPermission(pp, "plots.plothider.bypass")) { // Admin bypass
+        if (Permissions.hasPermission(pp, "plots.plothider.bypass")) { // Admin bypass 
             return;
         }
         Plot plot = pp.getCurrentPlot();
